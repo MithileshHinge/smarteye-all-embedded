@@ -5,7 +5,6 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +28,6 @@ import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.video.ConverterFactory;
 
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-
 public class Main extends Thread {
 
 	private static CascadeClassifier frontal_face_cascade;
@@ -39,14 +35,16 @@ public class Main extends Thread {
 	static boolean detectFace = true;
 	static boolean sendFrame = false;
 
-	private static final String outputFilename = "C:\\Users\\Home\\Desktop\\videos\\";
+	private static final String outputFilename = "F:\\Video\\";
 	public static IMediaWriter writer;
 	public static boolean store = false;
 	public static long startTime;
 	public static Date dNow;
-	public static SimpleDateFormat ft = new SimpleDateFormat("yyyy_MM_dd'at'hh_mm_ss_a");
+	public static SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd' at 'hh:mm:ss a");
 	public static boolean writer_close = false;
-	
+	//public static boolean sendmail = false;
+	public static String store_name;
+	public static String store_file_name;
 	static OutputStream out;
 
 	static long timeNow1, timeNow2;
@@ -62,6 +60,8 @@ public class Main extends Thread {
 	}
 
 	public static void main(String[] args) throws IOException {
+		
+		  
 
 		try {
 			SendingFrame.serverSocket = new ServerSocket(SendingFrame.port);
@@ -85,7 +85,7 @@ public class Main extends Thread {
 
 		// load cascade classifier
 		frontal_face_cascade = new CascadeClassifier(
-				"C:\\Users\\Home\\Downloads\\Programs\\opencv\\build\\etc\\haarcascades\\haarcascade_frontalface_alt.xml");
+				"G:/tuts/OpenCV Tut/opencv2.4.13/opencv/build/share/OpenCV/haarcascades/haarcascade_frontalface_alt.xml");
 		if (frontal_face_cascade.empty()) {
 			System.out.println("--(!)Error loading Front Face Cascade\n");
 			return;
@@ -145,7 +145,9 @@ public class Main extends Thread {
 				if (store == true) {
 					time3 = System.currentTimeMillis();
 					time3 = time4;
-					writer = ToolFactory.makeWriter(outputFilename + ft.format(dNow) + ".mp4");
+					store_name = outputFilename + ft.format(dNow) + ".mp4";
+					store_file_name = ft.format(dNow);
+					writer = ToolFactory.makeWriter(store_name);
 					writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, 640, 480);
 					startTime = System.nanoTime();
 					writer_close = true;
@@ -240,6 +242,7 @@ public class Main extends Thread {
 				if (writer_close) {
 					writer.close();
 					writer_close = false;
+					NotificationThread.sendmail = true;
 				}
 
 				detectFace = true;
@@ -283,7 +286,8 @@ public class Main extends Thread {
 			System.out.println(timeNow2 - timeNow1);
 			System.out.println("frmes_read" + framesRead);
 			timeNow1 = timeNow2;
-		}
+			
+					}
 	}
 
 	public static MatOfRect detect(Mat inputframe) {
